@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Basic page settings -->
+  <meta charset="UTF-8">
+  <!-- Makes the page fit the phone's screen width instead of zooming out -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoveMint</title>
+  <meta name="description" content="Short, equipment-free exercise challenges for 11–17-year-olds.">
+  <!-- Colour of the phone's top bar, and the icon in the browser tab
+       (a small SVG drawing: a mint hill line on forest green) -->
+  <meta name="theme-color" content="#12372a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312372a'/%3E%3Cpath d='M5 22c4-7 8-9 11-5s7 2 11-6' fill='none' stroke='%233ddc97' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <!-- Google Fonts: Archivo (big headings), JetBrains Mono (small labels), Manrope (body text) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,800..900&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- My own styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==========================================================
+       APP CONTAINER
+       Holds the four screens. Only one screen is visible at a
+       time: the one with the class "active".
+       ========================================================== -->
+  <main id="app">
+
+    <!-- ===== SCREEN 1: HOME ===== -->
+    <section id="home" class="screen active" aria-labelledby="home-title">
+
+      <!-- TICKER: a strip of text that scrolls forever.
+           script.js fills it using buildTicker(). -->
+      <div class="ticker">
+        <div class="ticker-track" id="ticker-track"></div>
+      </div>
+
+      <!-- HERO: layers stacked from back to front:
+           sky (background) → 3 hills → "MoveMint" → front hill.
+           data-depth (0 = far away, 1 = closest) controls how much each
+           layer moves for the parallax effect. -->
+      <div class="hero" id="hero">
+
+        <p class="label hero-label hero-label-left">Small steps · a healthier you</p>
+        <p class="label hero-label hero-label-right" id="hero-hour">Hour 00</p>
+
+        <!-- SKY: behind the hills. The sun or moon is placed by the hour
+             (updateHeroTime), clouds drift across in the day, and at night
+             stars twinkle and a shooting star passes. data-depth 0.05 means
+             it hardly moves with the parallax, like a real faraway sky. -->
+        <div class="sky" data-depth="0.05" aria-hidden="true">
+          <div class="sky-body" id="sky-body"></div>
+          <svg class="cloud cloud-1" viewBox="0 0 180 80"><path d="M40 72C18 72 12 50 30 44C28 24 56 16 66 32C74 10 112 10 118 34C138 26 160 40 152 56C172 58 172 72 156 72Z"/></svg>
+          <svg class="cloud cloud-2" viewBox="0 0 180 80"><path d="M40 72C18 72 12 50 30 44C28 24 56 16 66 32C74 10 112 10 118 34C138 26 160 40 152 56C172 58 172 72 156 72Z"/></svg>
+          <svg class="cloud cloud-3" viewBox="0 0 180 80"><path d="M40 72C18 72 12 50 30 44C28 24 56 16 66 32C74 10 112 10 118 34C138 26 160 40 152 56C172 58 172 72 156 72Z"/></svg>
+          <svg class="cloud cloud-4" viewBox="0 0 180 80"><path d="M40 72C18 72 12 50 30 44C28 24 56 16 66 32C74 10 112 10 118 34C138 26 160 40 152 56C172 58 172 72 156 72Z"/></svg>
+          <div class="stars" id="stars"></div>
+          <span class="shooting-star"></span>
+        </div>
+
+        <!-- This hour's challenge, in the sky. renderHourlyChallenge() fills
+             it in; Start now begins the workout in 1 tap from Home. -->
+        <div class="hero-challenge" id="hero-challenge">
+          <p class="label hero-challenge-label" id="hero-challenge-label">This hour's challenge</p>
+          <p class="hero-challenge-name" id="hero-challenge-name">Squats</p>
+          <p class="hero-challenge-info" id="hero-challenge-info">10 reps · +10 pts · no equipment</p>
+          <button class="btn btn-mint" type="button" id="hero-start">Start now <span aria-hidden="true">→</span></button>
+        </div>
+
+        <!-- Hills drawn with SVG paths. "C" in a path draws a smooth curve.
+             The shape is closed along the bottom (L ... Z) so it can be filled. -->
+        <svg class="hill hill-far" data-depth="0.1" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+          <path d="M0 140 C160 80 300 60 440 100 C560 135 640 40 760 45 C880 50 940 120 1060 110 C1200 98 1320 60 1440 80 L1440 320 L0 320 Z"/>
+        </svg>
+        <svg class="hill hill-mid" data-depth="0.3" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+          <path d="M0 160 C180 110 340 170 500 140 C620 118 680 70 800 95 C920 120 980 170 1100 150 C1240 128 1340 100 1440 120 L1440 320 L0 320 Z"/>
+        </svg>
+        <svg class="hill hill-near" data-depth="0.5" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+          <path d="M0 120 C200 160 380 60 560 95 C660 115 720 150 820 130 C920 110 980 60 1100 80 C1260 105 1380 150 1440 140 L1440 320 L0 320 Z"/>
+        </svg>
+
+        <!-- Title sits between the near hill and the front hill.
+             script.js splits it into letters so they can rise one by one. -->
+        <div class="hero-title-wrap" data-depth="0.6">
+          <h1 id="home-title" class="hero-title">MoveMint</h1>
+        </div>
+
+        <!-- Front hill: drawn last, so it covers the bottom of the letters -->
+        <svg class="hill hill-front" data-depth="1" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+          <path d="M0 100 C200 40 400 90 560 60 C680 38 740 90 840 80 C960 68 1040 20 1200 50 C1320 72 1400 60 1440 70 L1440 320 L0 320 Z"/>
+        </svg>
+
+        <!-- Scroll cue: tapping it scrolls down to the Start Today card -->
+        <button class="label scroll-cue" id="scroll-cue" type="button">
+          <svg class="scroll-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          Scroll
+        </button>
+      </div>
+
+      <!-- Below the hero: phone-width content -->
+      <div class="home-content">
+        <!-- "Start Today" card: the whole card is one button that opens Challenges.
+             It fades/slides in when it scrolls into view (class "reveal"). -->
+        <button class="card start-card reveal" type="button" data-screen="challenges">
+          <span class="label">Under 5 min · no equipment</span>
+          <span class="start-card-title">Start Today</span>
+          <span class="start-card-text">Move today for a brighter tomorrow.</span>
+          <span class="start-card-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN 2: CHALLENGES ===== -->
+    <section id="challenges" class="screen" aria-labelledby="challenges-title">
+      <p class="label">Pick a challenge</p>
+      <h2 id="challenges-title" class="screen-heading">Challenges</h2>
+
+      <!-- Filter tabs: data-filter tells renderChallenges() which list to show -->
+      <div class="filter-tabs" role="group" aria-label="Show challenges for">
+        <button class="filter-tab active" type="button" data-filter="today" aria-pressed="true">Today</button>
+        <button class="filter-tab" type="button" data-filter="week" aria-pressed="false">This Week</button>
+        <button class="filter-tab" type="button" data-filter="all" aria-pressed="false">All</button>
+      </div>
+
+      <!-- This Hour's Challenge: script.js fills this in from the challenges array -->
+      <div class="card hour-card">
+        <p class="label hour-card-label" id="hour-card-label">This hour's challenge</p>
+        <h3 class="hour-card-title" id="hour-card-title">Squats</h3>
+        <p class="hour-card-info" id="hour-card-info">10 reps · +10 pts · no equipment</p>
+        <button class="btn btn-mint" type="button" id="hour-card-start">Start <span aria-hidden="true">→</span></button>
+      </div>
+
+      <p class="label list-label" id="list-label">Today's challenges</p>
+
+      <!-- Challenge cards: renderChallenges() builds one <button> card per challenge -->
+      <div class="challenge-list" id="challenge-list"></div>
+    </section>
+
+    <!-- ===== CHALLENGE DETAILS (opened from a challenge card) =====
+         data-nav="challenges" keeps the Challenges nav button highlighted.
+         openChallenge() fills in every element that has an id. -->
+    <section id="details" class="screen" data-nav="challenges" aria-labelledby="details-title">
+      <button class="back-btn" type="button" data-screen="challenges">
+        <span aria-hidden="true">←</span> All challenges
+      </button>
+
+      <p class="label" id="details-category">Bodyweight</p>
+      <h2 id="details-title" class="screen-heading">Squats</h2>
+
+      <!-- Target for the chosen difficulty, e.g. "15 reps" and "+15 pts" -->
+      <div class="details-target">
+        <p class="details-amount">
+          <span class="details-number" id="details-number">10</span>
+          <span class="details-unit" id="details-unit">reps</span>
+        </p>
+        <p class="details-points" id="details-points">+10 pts</p>
+      </div>
+
+      <!-- Difficulty selector: a mint "pill" slides behind the chosen level.
+           --level (0, 1 or 2) is set by chooseDifficulty() and moves the pill. -->
+      <div class="difficulty" id="difficulty" style="--level: 0" role="group" aria-label="Difficulty">
+        <button class="difficulty-btn" type="button" data-level="easy" aria-pressed="true">Easy</button>
+        <button class="difficulty-btn" type="button" data-level="medium" aria-pressed="false">Medium</button>
+        <button class="difficulty-btn" type="button" data-level="hard" aria-pressed="false">Hard</button>
+      </div>
+
+      <div class="card">
+        <p class="label">How to do it</p>
+        <ol class="instructions" id="details-instructions"></ol>
+        <p class="no-equipment">No equipment needed · about <span id="details-minutes">2</span> min</p>
+      </div>
+
+      <!-- Easier version: hidden until the button is tapped (Ergonomics + Safety specs) -->
+      <button class="easier-btn" type="button" id="easier-btn" aria-expanded="false" aria-controls="easier-text">
+        Try an easier version
+      </button>
+      <p class="easier-text" id="easier-text" hidden></p>
+
+      <!-- Starts the workout at the chosen difficulty -->
+      <button class="btn btn-primary" type="button" id="details-start">Start</button>
+    </section>
+
+    <!-- ===== WORKOUT (opened by startWorkout()) =====
+         data-nav="challenges" keeps the Challenges nav button highlighted. -->
+    <section id="workout" class="screen" data-nav="challenges" aria-labelledby="workout-title">
+      <p class="label" id="workout-label">Workout · Easy</p>
+      <h2 id="workout-title" class="screen-heading">Squats</h2>
+      <p class="workout-target" id="workout-target">10 reps</p>
+
+      <!-- Timer ring: a conic-gradient (a colour "pie") that drains as
+           --progress goes from 1 (full) to 0 (empty). The inner circle
+           makes it a ring. -->
+      <div class="timer-ring" id="timer-ring" style="--progress: 1">
+        <div class="timer-inner">
+          <span class="timer-time" id="timer-time">0:30</span>
+          <span class="label" id="timer-note">left</span>
+        </div>
+      </div>
+
+      <!-- Status message. aria-live makes screen readers read out changes. -->
+      <p class="workout-status" id="workout-status" aria-live="polite">Go! Keep a steady pace.</p>
+
+      <div class="workout-buttons">
+        <button class="btn btn-outline" type="button" id="pause-btn" aria-pressed="false">Pause</button>
+        <button class="btn btn-outline" type="button" id="stop-btn">Stop</button>
+      </div>
+
+      <!-- Done can be tapped any time: reps may be finished before the time guide ends -->
+      <button class="btn btn-primary" type="button" id="done-btn">Done</button>
+
+      <!-- Easier option is always available during a workout (Safety spec) -->
+      <button class="easier-btn" type="button" id="workout-easier-btn" aria-expanded="false" aria-controls="workout-easier-text">
+        Need it easier?
+      </button>
+      <p class="easier-text" id="workout-easier-text" hidden></p>
+    </section>
+
+    <!-- ===== COMPLETION (opened by completeChallenge()) ===== -->
+    <section id="complete" class="screen" data-nav="challenges" aria-labelledby="complete-title">
+      <p class="label">Challenge complete</p>
+      <h2 id="complete-title" class="complete-title">Well done!</h2>
+
+      <!-- Points earned. The "+15" copy floats up and fades (CSS animation). -->
+      <div class="complete-points">
+        <span class="points-badge" id="complete-points">+15 points</span>
+        <span class="points-float" id="points-float" aria-hidden="true">+15</span>
+      </div>
+
+      <p class="complete-summary" id="complete-summary">Plank · Medium · 30 seconds</p>
+      <p class="complete-total">Total points: <strong id="complete-total">15</strong></p>
+
+      <!-- New achievements are added here by completeChallenge() -->
+      <div class="new-achievements" id="new-achievements"></div>
+
+      <button class="btn btn-primary" type="button" data-screen="challenges">Pick another challenge</button>
+      <button class="btn btn-outline btn-wide" type="button" data-screen="progress">See my progress</button>
+    </section>
+
+    <!-- ===== SCREEN 3: PROGRESS =====
+         updateProgress() fills this in every time the screen opens. -->
+    <section id="progress" class="screen" aria-labelledby="progress-title">
+      <p class="label">Your week</p>
+      <h2 id="progress-title" class="screen-heading">Progress</h2>
+
+      <!-- Weekly goal: the ring fills to (challenges this week ÷ weekly goal) -->
+      <div class="card goal-card">
+        <div class="goal-ring" id="goal-ring" style="--goal: 0">
+          <div class="goal-inner">
+            <span class="goal-count" id="goal-count">0/5</span>
+            <span class="label">this week</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="goal-title">Weekly goal</h3>
+          <p class="goal-text" id="goal-text">5 challenges this week</p>
+          <p class="goal-message" id="goal-message">Every challenge counts – start whenever you're ready.</p>
+        </div>
+      </div>
+
+      <!-- Totals: the numbers count up from 0 when the screen opens -->
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-number" id="stat-points">0</span>
+          <span class="stat-label">Total points</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="stat-completed">0</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="stat-badges">0</span>
+          <span class="stat-label">Badges of 5</span>
+        </div>
+      </div>
+
+      <!-- Optional leaderboard: only shown when it's switched on in
+           Profile settings (Competition spec). renderLeaderboard() fills it. -->
+      <div id="leaderboard" hidden>
+        <p class="label section-label">This week's leaderboard</p>
+        <ol class="leader-list" id="leader-list"></ol>
+        <p class="leader-note">Friends' scores are sample data in this version.</p>
+      </div>
+
+      <!-- Badges: one per achievement. Locked ones are greyed out. -->
+      <p class="label section-label">Badges</p>
+      <ul class="badges" id="badges"></ul>
+
+      <!-- Completed challenges, newest first -->
+      <p class="label section-label">Completed challenges</p>
+      <ul class="completed-list" id="completed-list"></ul>
+
+      <!-- Motivational quote (changes each day) -->
+      <p class="quote" id="quote">"Small steps every day add up to big changes."</p>
+    </section>
+
+    <!-- ===== SCREEN 4: PROFILE =====
+         updateProfile() fills this in every time the screen opens. -->
+    <section id="profile" class="screen" aria-labelledby="profile-title">
+      <p class="label">You</p>
+      <h2 id="profile-title" class="screen-heading">Profile</h2>
+
+      <!-- Name and avatar (the first letter of the name) -->
+      <div class="card profile-card">
+        <div class="avatar" id="profile-avatar" aria-hidden="true">?</div>
+        <div>
+          <p class="profile-name" id="profile-name">Add your name</p>
+          <p class="profile-tagline">Small steps, a healthier you.</p>
+        </div>
+      </div>
+
+      <!-- Stats – no streak anywhere (Sustainability spec) -->
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-number" id="profile-completed">0</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="profile-points">0</span>
+          <span class="stat-label">Points</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="profile-badges">0</span>
+          <span class="stat-label">Badges of 5</span>
+        </div>
+      </div>
+
+      <!-- Edit profile: a form with a name box. novalidate turns off the
+           browser's own pop-ups, so script.js can show friendly messages. -->
+      <button class="btn btn-outline btn-wide" type="button" id="edit-profile-btn" aria-expanded="false" aria-controls="edit-profile-form">Edit profile</button>
+
+      <form class="card edit-form" id="edit-profile-form" hidden novalidate>
+        <label class="label" for="name-input">Your name</label>
+        <input class="text-input" id="name-input" type="text" maxlength="20" autocomplete="given-name" aria-describedby="name-error">
+        <p class="form-error" id="name-error" role="alert"></p>
+        <div class="form-buttons">
+          <button class="btn btn-primary" type="submit">Save</button>
+          <button class="btn btn-outline" type="button" id="cancel-edit-btn">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Settings -->
+      <p class="label section-label">Settings</p>
+      <div class="card settings">
+
+        <!-- Leaderboard on/off switch (OFF by default – Competition spec) -->
+        <div class="setting-row">
+          <div>
+            <p class="setting-name" id="leaderboard-label">Leaderboard</p>
+            <p class="setting-hint">Compare weekly points with friends on the Progress screen.</p>
+          </div>
+          <button class="switch" type="button" role="switch" id="leaderboard-switch" aria-checked="false" aria-labelledby="leaderboard-label">
+            <span class="switch-knob"></span>
+          </button>
+        </div>
+
+        <!-- Weekly goal: 3, 5 or 7 challenges -->
+        <div class="setting-row setting-column">
+          <p class="setting-name" id="goal-setting-label">Weekly goal</p>
+          <div class="segmented" role="group" aria-labelledby="goal-setting-label">
+            <button class="segment" type="button" data-goal="3" aria-pressed="false">3</button>
+            <button class="segment" type="button" data-goal="5" aria-pressed="true">5</button>
+            <button class="segment" type="button" data-goal="7" aria-pressed="false">7</button>
+          </div>
+        </div>
+
+        <!-- Reset progress, with an on-screen "Are you sure?" (no confirm() pop-up) -->
+        <div class="setting-row setting-column">
+          <p class="setting-name">Reset progress</p>
+          <p class="setting-hint">Deletes your points, completed challenges and badges. Your name and settings stay.</p>
+          <button class="btn btn-outline btn-wide" type="button" id="reset-btn" aria-expanded="false" aria-controls="reset-confirm">Reset progress</button>
+          <div class="confirm" id="reset-confirm" hidden>
+            <p class="confirm-text">Are you sure? This can't be undone.</p>
+            <div class="form-buttons">
+              <button class="btn btn-danger" type="button" id="reset-yes-btn">Yes, reset</button>
+              <button class="btn btn-outline" type="button" id="reset-no-btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- On-screen message (used instead of alert() pop-ups).
+       showMessage() in script.js fills it and hides it again. -->
+  <p class="message" id="message" role="status" aria-live="polite" hidden></p>
+
+  <!-- ==========================================================
+       BOTTOM NAVIGATION BAR
+       Each button stores the id of the screen it opens in a
+       "data-screen" attribute. showScreen() reads this to know
+       which screen to show. Icons are small SVG drawings
+       (stroke = outline only), matching the Design 1 mockup.
+       ========================================================== -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-btn active" type="button" data-screen="home" aria-current="page">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>
+      Home
+    </button>
+    <button class="nav-btn" type="button" data-screen="challenges">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7v10M3 9.5v5M18 7v10M21 9.5v5M6 12h12"/></svg>
+      Challenges
+    </button>
+    <button class="nav-btn" type="button" data-screen="progress">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-6M10 20V9M15 20v-8M20 20V5"/></svg>
+      Progress
+    </button>
+    <button class="nav-btn" type="button" data-screen="profile">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+      Profile
+    </button>
+  </nav>
+
+  <!-- My JavaScript. "defer" means it runs after the HTML has loaded. -->
+  <script src="script.js" defer></script>
+</body>
+</html>
